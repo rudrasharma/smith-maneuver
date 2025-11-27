@@ -233,14 +233,14 @@ export default function SmithManoeuvreApp() {
                 <label className="block text-sm font-semibold mb-1">Interest Rate (Prime +/-)</label>
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
+                    <span className="absolute left-3 top-2.5 text-slate-400 text-sm">%</span>
                     <input 
                       type="number" 
                       step="0.1"
                       value={rateSpread} 
                       onChange={(e) => setRateSpread(Number(e.target.value))}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                      className="w-full pl-8 p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                     />
-                    <span className="absolute right-3 top-2.5 text-slate-400 text-xs">%</span>
                   </div>
                 </div>
               </div>
@@ -248,13 +248,13 @@ export default function SmithManoeuvreApp() {
               <div>
                 <label className="block text-sm font-semibold mb-1">Marginal Tax Rate</label>
                 <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-slate-400 text-sm">%</span>
                   <input 
                     type="number" 
                     value={taxRate} 
                     onChange={(e) => setTaxRate(Number(e.target.value))}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                    className="w-full pl-8 p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                   />
-                  <span className="absolute right-3 top-2.5 text-slate-400 text-xs">%</span>
                 </div>
               </div>
 
