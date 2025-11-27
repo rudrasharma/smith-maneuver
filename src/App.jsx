@@ -150,7 +150,22 @@ export default function SmithManoeuvreApp() {
   const currentEtfInfo = ETFS.find(e => e.ticker === selectedEtf);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans text-slate-800">
+    <div className="min-h-screen w-full bg-gray-50 p-4 md:p-8 font-sans text-slate-800">
+      {/* Global Style Overrides to fix layout issues */}
+      <style>{`
+        :root, body, #root {
+          height: 100%;
+          width: 100%;
+          margin: 0;
+          padding: 0;
+          background-color: #f9fafb; /* bg-gray-50 */
+        }
+        /* Reset potential default centering from scaffolding tools */
+        body {
+          display: block !important; 
+          place-items: unset !important;
+        }
+      `}</style>
       
       <header className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
         <div>
@@ -422,4 +437,3 @@ export default function SmithManoeuvreApp() {
     </div>
   );
 }
-
