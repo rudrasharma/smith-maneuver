@@ -185,7 +185,9 @@ export default function SmithManoeuvreApp() {
         const effectiveRate = prime + rateSpread;
 
         const currentTotalPortfolio = strategyPortfolio + collateralPortfolio;
-        const currentEquity = currentTotalPortfolio - currentLoan;
+        // For margin call logic we need total portfolio value
+        // For reporting, we will just use strategyPortfolio later
+        const currentEquity = strategyPortfolio - currentLoan; // This is Strategy Equity
 
         stressScenarios.forEach(scen => {
           if (y === scen.start && m === 1) {
@@ -203,12 +205,17 @@ export default function SmithManoeuvreApp() {
 
         const stratDiv = strategyPortfolio * stratMonthlyYield;
         const colDiv = collateralPortfolio * colMonthlyYield;
-        const totalDiv = stratDiv + colDiv;
-        
-        accumDividends += totalDiv;
+        // accumDividends is for reporting "Total Dividends (Benefit)" 
+        // User wants Collateral to be independent, so we ONLY track stratDiv for reporting
+        accumDividends += stratDiv;
         
         if (reinvestDividends) {
-          strategyPortfolio += totalDiv; 
+          strategyPortfolio += stratDiv; 
+          collateralPortfolio += colDiv; // Reinvest independently in background
+        } else {
+          // If not reinvesting, where does colDiv go? 
+          // It's independent income, so we ignore it for the simulation's cash flow.
+          // We only care about stratDiv reducing the loan cost.
         }
 
         const interest = currentLoan * (effectiveRate / 100 / 12);
@@ -219,7 +226,7 @@ export default function SmithManoeuvreApp() {
         let netCost = interest - refund;
         let cashDividend = 0;
         if (!reinvestDividends) {
-          cashDividend = totalDiv;
+          cashDividend = stratDiv; // Only use Strategy dividends to pay down loan interest
           netCost -= cashDividend;
         }
         
@@ -251,8 +258,7 @@ export default function SmithManoeuvreApp() {
           if (currentLTV > 70) marginCallMonths++; 
         }
 
-        const finalTotalPortfolio = strategyPortfolio + collateralPortfolio;
-        const finalEquity = finalTotalPortfolio - currentLoan;
+        const finalEquity = strategyPortfolio - currentLoan;
 
         let currentRecovered = accumRefunds;
         if (!reinvestDividends) currentRecovered += accumDividends;
@@ -263,7 +269,7 @@ export default function SmithManoeuvreApp() {
           date: `${y}-${String(m).padStart(2, '0')}`,
           year: y,
           month: m,
-          portfolio: Math.round(finalTotalPortfolio),
+          portfolio: Math.round(strategyPortfolio), // Reporting Strategy Only
           loan: Math.round(currentLoan),
           netEquity: Math.round(finalEquity),
           netCost: Math.round(netCost),
@@ -305,13 +311,14 @@ export default function SmithManoeuvreApp() {
     let totalRecovered = accumRefunds;
     if (!reinvestDividends) totalRecovered += accumDividends;
     const netOutOfPocket = accumInterest - totalRecovered;
-    const netEquity = (strategyPortfolio + collateralPortfolio) - currentLoan;
+    
+    const netEquity = strategyPortfolio - currentLoan;
     const trueProfit = netEquity - netOutOfPocket;
 
     return {
       data: dataPoints,
       stats: {
-        portfolio: strategyPortfolio + collateralPortfolio,
+        portfolio: strategyPortfolio,
         loan: currentLoan,
         netEquity,
         trueProfit,
@@ -468,7 +475,7 @@ export default function SmithManoeuvreApp() {
 
           <div className={`rounded-xl shadow-sm border p-6 ${loanType === 'MARGIN' ? 'bg-orange-50 border-orange-200' : 'bg-slate-50 border-slate-200 opacity-75'}`}>
             <h2 className={`text-sm font-bold uppercase tracking-wide mb-3 flex items-center gap-2 ${loanType === 'MARGIN' ? 'text-orange-900' : 'text-slate-500'}`}>
-              <AlertTriangle size={16} /> Margin Call Risk
+              <ShieldAlert size={16} /> Margin Call Risk
             </h2>
             <div className={`text-xs space-y-3 ${loanType === 'MARGIN' ? 'text-orange-800' : 'text-slate-500'}`}>
               <p className="leading-relaxed">{loanType === 'MARGIN' ? "Margin calls trigger forced asset sales when LTV > 70%, locking in losses permanently." : "HELOCs are typically not callable based on LTV fluctuations, reducing risk significantly."}</p>
